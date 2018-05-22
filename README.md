@@ -1,5 +1,5 @@
 # Namecheck
-##### A username availability checker.
+#### A username availability checker.
 
 I decided one day I wanted to change my username on one site to something simpler, but quickly realized that I might not be able to get the same username on other sites that mattered to me. Coincidentally, I wanted to learn Go. This project gave me an excuse. Beware, a Go n00b wrote this. You were warned...
 
@@ -9,7 +9,7 @@ go get -u github.com/ParticleDecay/namecheck
 ```
 
 ## Usage
-##### Query all sites for a username
+#### Query all sites for a username
 ```bash
 $ namecheck all PepperoniKing
 
@@ -23,7 +23,7 @@ Twitter:       	Not Available (but '_PepperoniKing' is available)
 Twitch:        	Not Available
 Fortnite:      	Not Available
 ```
-##### Query a single site
+#### Query a single site
 ```bash
 $ namecheck github CodeGolfer
 GitHub:        	Not Available (but '_CodeGolfer' is available)
