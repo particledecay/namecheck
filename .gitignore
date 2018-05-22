@@ -44,3 +44,5 @@ _testmain.go
 /test/pass.out
 /test/run.out
 /test/times.out
+
+.vscode

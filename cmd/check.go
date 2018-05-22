@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"text/tabwriter"
 
 	"github.com/ParticleDecay/namecheck/sites"
 	"github.com/spf13/cobra"
@@ -42,6 +41,7 @@ var chkCmd = &cobra.Command{
 	},
 }
 
+// Execute adds the subcommands and runs the main command.
 func Execute() {
 	rootCmd.AddCommand(chkCmd)
 	if err := rootCmd.Execute(); err != nil {
@@ -58,17 +58,14 @@ func printHeader(username string) {
 }
 
 func printOutput(siteName string, available bool, alternative string) {
-	writer := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
-	output := siteName + ":\t%s"
-
 	if available == true && alternative == "ERROR" { // This is just an error
-		output = fmt.Sprintf(output, "ERROR")
-		fmt.Fprintln(writer, output)
+		errorLine := fmt.Sprintf("%s:\tERROR\n", siteName)
+		fmt.Printf(errorLine)
 		return
 	}
 
 	// Print the output
-	output = fmt.Sprintf(output, "Available")
+	output := "Available"
 	if available == false {
 		output = fmt.Sprintf("Not %s", output)
 
@@ -76,7 +73,9 @@ func printOutput(siteName string, available bool, alternative string) {
 			output = fmt.Sprintf("%s (but '%s' is available)", output, alternative)
 		}
 	}
-	fmt.Fprintln(writer, output)
+	siteNameWithColon := fmt.Sprintf("%s:", siteName)
+	output = fmt.Sprintf("%-15s\t%s", siteNameWithColon, output)
+	fmt.Println(output)
 }
 
 func checkAll(username string) {
