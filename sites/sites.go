@@ -12,6 +12,7 @@ var URLS = map[string]string{
 	"Instagram": "https://www.instagram.com/%s/",
 	"Fortnite":  "https://www.stormshield.one/pvp/stats/%s",
 	"Twitch":    "https://api.twitch.tv/kraken/users/%s?client_id=bwllomi5jnmezyug7aprtkjqeb42hh",
+	"Google+":   "https://plus.google.com/+%s",
 }
 
 // NameExists makes a simple check for an already existing username.

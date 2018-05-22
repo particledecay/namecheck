@@ -114,6 +114,19 @@ var fortniteCmd = &cobra.Command{
 	},
 }
 
+var gplusCmd = &cobra.Command{
+	Use:   "gplus", // This will be the command name
+	Short: "Query Google+ only",
+	Long:  `Query Google+ for the given <username>.`,
+	Args:  usernameCheck,
+	Run: func(cmd *cobra.Command, args []string) {
+		ch := make(chan *sites.NameResult)
+		go checkGooglePlus(args[0], ch) // This is the only line that needs to be specific to your site
+		name := <-ch
+		printOutput(name)
+	},
+}
+
 func usernameCheck(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
 		return errors.New("Error: A username is required")
@@ -130,6 +143,7 @@ func Execute() {
 	rootCmd.AddCommand(instaCmd)
 	rootCmd.AddCommand(twitchCmd)
 	rootCmd.AddCommand(fortniteCmd)
+	rootCmd.AddCommand(gplusCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -187,6 +201,9 @@ func checkAll(username string) {
 	// Fortnite
 	go checkFortnite(username, ch)
 
+	// Google+
+	go checkGooglePlus(username, ch)
+
 	for i := 0; i < len(sites.URLS); i++ {
 		name := <-ch
 		printOutput(name)
@@ -216,4 +233,8 @@ func checkTwitch(username string, ch chan *sites.NameResult) {
 
 func checkFortnite(username string, ch chan *sites.NameResult) {
 	ch <- sites.IfElementOnPage("Fortnite", username, "//div[contains(@class, 'profile__title')]//h2/following-sibling::div[1]/div[contains(text(), 'Not found')]")
+}
+
+func checkGooglePlus(username string, ch chan *sites.NameResult) {
+	ch <- sites.IfPageNotFound("Google+", username, false)
 }
