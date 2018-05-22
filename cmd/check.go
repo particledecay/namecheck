@@ -30,20 +30,106 @@ var chkCmd = &cobra.Command{
 	Use:   "all",
 	Short: "Query all sites",
 	Long:  `Query all sites for the given <username>.`,
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("Error: A username is required")
-		}
-		return nil
-	},
+	Args:  usernameCheck,
 	Run: func(cmd *cobra.Command, args []string) {
 		checkAll(args[0])
 	},
 }
 
-// Execute adds the subcommands and runs the main command.
+var ghCmd = &cobra.Command{
+	Use:   "github",
+	Short: "Query GitHub only",
+	Long:  `Query GitHub for the given <username>.`,
+	Args:  usernameCheck,
+	Run: func(cmd *cobra.Command, args []string) {
+		ch := make(chan *sites.NameResult)
+		go checkGitHub(args[0], ch)
+		name := <-ch
+		printOutput(name)
+	},
+}
+
+var fbCmd = &cobra.Command{
+	Use:   "facebook",
+	Short: "Query Facebook only",
+	Long:  `Query Facebook for the given <username>.`,
+	Args:  usernameCheck,
+	Run: func(cmd *cobra.Command, args []string) {
+		ch := make(chan *sites.NameResult)
+		go checkFacebook(args[0], ch)
+		name := <-ch
+		printOutput(name)
+	},
+}
+
+var twitterCmd = &cobra.Command{
+	Use:   "twitter",
+	Short: "Query Twitter only",
+	Long:  `Query Twitter for the given <username>.`,
+	Args:  usernameCheck,
+	Run: func(cmd *cobra.Command, args []string) {
+		ch := make(chan *sites.NameResult)
+		go checkTwitter(args[0], ch)
+		name := <-ch
+		printOutput(name)
+	},
+}
+
+var instaCmd = &cobra.Command{
+	Use:   "instagram",
+	Short: "Query Instagram only",
+	Long:  `Query Instagram for the given <username>.`,
+	Args:  usernameCheck,
+	Run: func(cmd *cobra.Command, args []string) {
+		ch := make(chan *sites.NameResult)
+		go checkInstagram(args[0], ch)
+		name := <-ch
+		printOutput(name)
+	},
+}
+
+var twitchCmd = &cobra.Command{
+	Use:   "twitch",
+	Short: "Query Twitch only",
+	Long:  `Query Twitch for the given <username>.`,
+	Args:  usernameCheck,
+	Run: func(cmd *cobra.Command, args []string) {
+		ch := make(chan *sites.NameResult)
+		go checkTwitch(args[0], ch)
+		name := <-ch
+		printOutput(name)
+	},
+}
+
+var fortniteCmd = &cobra.Command{
+	Use:   "fortnite",
+	Short: "Query Fortnite only",
+	Long:  `Query Fortnite for the given <username>.`,
+	Args:  usernameCheck,
+	Run: func(cmd *cobra.Command, args []string) {
+		ch := make(chan *sites.NameResult)
+		go checkFortnite(args[0], ch)
+		name := <-ch
+		printOutput(name)
+	},
+}
+
+func usernameCheck(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return errors.New("Error: A username is required")
+	}
+	return nil
+}
+
+// Execute adds the subcommands and runs the main command
 func Execute() {
 	rootCmd.AddCommand(chkCmd)
+	rootCmd.AddCommand(ghCmd)
+	rootCmd.AddCommand(fbCmd)
+	rootCmd.AddCommand(twitterCmd)
+	rootCmd.AddCommand(instaCmd)
+	rootCmd.AddCommand(twitchCmd)
+	rootCmd.AddCommand(fortniteCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -57,23 +143,23 @@ func printHeader(username string) {
 	fmt.Println("")
 }
 
-func printOutput(siteName string, available bool, alternative string) {
-	if available == true && alternative == "ERROR" { // This is just an error
-		errorLine := fmt.Sprintf("%s:\tERROR\n", siteName)
+func printOutput(name *sites.NameResult) {
+	if name.Available == true && name.Alternate == "ERROR" { // This is just an error
+		errorLine := fmt.Sprintf("%s:\tERROR\n", name.SiteName)
 		fmt.Printf(errorLine)
 		return
 	}
 
 	// Print the output
 	output := "Available"
-	if available == false {
+	if name.Available == false {
 		output = fmt.Sprintf("Not %s", output)
 
-		if alternative != "" {
-			output = fmt.Sprintf("%s (but '%s' is available)", output, alternative)
+		if name.Alternate != "" {
+			output = fmt.Sprintf("%s (but '%s' is available)", output, name.Alternate)
 		}
 	}
-	siteNameWithColon := fmt.Sprintf("%s:", siteName)
+	siteNameWithColon := fmt.Sprintf("%s:", name.SiteName)
 	output = fmt.Sprintf("%-15s\t%s", siteNameWithColon, output)
 	fmt.Println(output)
 }
@@ -81,51 +167,53 @@ func printOutput(siteName string, available bool, alternative string) {
 func checkAll(username string) {
 	printHeader(username)
 
+	ch := make(chan *sites.NameResult)
+
 	// GitHub
-	siteName, available, alternative := checkGitHub(username)
-	printOutput(siteName, available, alternative)
+	go checkGitHub(username, ch)
 
 	// Facebook
-	siteName, available, alternative = checkFacebook(username)
-	printOutput(siteName, available, alternative)
+	go checkFacebook(username, ch)
 
 	// Twitter
-	siteName, available, alternative = checkTwitter(username)
-	printOutput(siteName, available, alternative)
+	go checkTwitter(username, ch)
 
 	// Instagram
-	siteName, available, alternative = checkInstagram(username)
-	printOutput(siteName, available, alternative)
+	go checkInstagram(username, ch)
 
 	// Twitch
-	siteName, available, alternative = checkTwitch(username)
-	printOutput(siteName, available, alternative)
+	go checkTwitch(username, ch)
 
 	// Fortnite
-	siteName, available, alternative = checkFortnite(username)
-	printOutput(siteName, available, alternative)
+	go checkFortnite(username, ch)
+
+	for i := 0; i < len(sites.URLS); i++ {
+		name := <-ch
+		printOutput(name)
+	}
+	close(ch)
 }
 
-func checkGitHub(username string) (string, bool, string) {
-	return sites.IfPageNotFound("GitHub", username, false)
+func checkGitHub(username string, ch chan *sites.NameResult) {
+	ch <- sites.IfPageNotFound("GitHub", username, false)
 }
 
-func checkFacebook(username string) (string, bool, string) {
-	return sites.IfPageNotFound("Facebook", username, false)
+func checkFacebook(username string, ch chan *sites.NameResult) {
+	ch <- sites.IfPageNotFound("Facebook", username, false)
 }
 
-func checkTwitter(username string) (string, bool, string) {
-	return sites.IfPageNotFound("Twitter", username, false)
+func checkTwitter(username string, ch chan *sites.NameResult) {
+	ch <- sites.IfPageNotFound("Twitter", username, false)
 }
 
-func checkInstagram(username string) (string, bool, string) {
-	return sites.IfPageNotFound("Instagram", username, true)
+func checkInstagram(username string, ch chan *sites.NameResult) {
+	ch <- sites.IfPageNotFound("Instagram", username, true)
 }
 
-func checkTwitch(username string) (string, bool, string) {
-	return sites.IfPageNotFound("Twitch", username, false)
+func checkTwitch(username string, ch chan *sites.NameResult) {
+	ch <- sites.IfPageNotFound("Twitch", username, false)
 }
 
-func checkFortnite(username string) (string, bool, string) {
-	return sites.IfElementOnPage("Fortnite", username, "//div[contains(@class, 'profile__title')]//h2/following-sibling::div[1]/div[contains(text(), 'Not found')]")
+func checkFortnite(username string, ch chan *sites.NameResult) {
+	ch <- sites.IfElementOnPage("Fortnite", username, "//div[contains(@class, 'profile__title')]//h2/following-sibling::div[1]/div[contains(text(), 'Not found')]")
 }
