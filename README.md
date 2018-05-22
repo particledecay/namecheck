@@ -44,7 +44,7 @@ dep ensure
 It should be very straightforward to add another site. Let's add Google+ as an example (I might as well check it in, too):
 1. Every site needs a `check` function in [check.go](cmd/check.go). It's up to you to find out how you would "check" that a username exists for a particular site. In Google+'s case, you can simply request the page at https://plus.google.com/+USERNAME, so we can use the `IfPageNotFound` function. This function just checks whether a username is available by looking for a 404 status code. You can find all the available checking functions (and add your own :) in [checks.go](sites/checks.go).
 
-The `check` function should expect a username and a channel, and return a `*sites.NameResult`:
+The `check` function should expect a username and a channel:
 ```go
 func checkGooglePlus(username string, ch chan *sites.NameResult) {
     // Args are the site name, username, and whether a browser-like user agent needs to be sent.
