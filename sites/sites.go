@@ -4,28 +4,25 @@ import "fmt"
 import "net/http"
 import "github.com/antchfx/htmlquery"
 
-// URLS is a global map of sites and what URL to check
-var URLS = map[string]string{
-	"GitHub":    "https://github.com/%s",
-	"Twitter":   "https://twitter.com/%s",
-	"Facebook":  "https://www.facebook.com/%s",
-	"Instagram": "https://www.instagram.com/%s/",
-	"Fortnite":  "https://www.stormshield.one/pvp/stats/%s",
-	"Twitch":    "https://api.twitch.tv/kraken/users/%s?client_id=bwllomi5jnmezyug7aprtkjqeb42hh",
-	"Google+":   "https://plus.google.com/+%s",
+// Site is a site that can be queried for a username
+type Site interface {
+	Name() string
+	URL() string
+	UserAgent() string
+	Check(username string, ch chan *NameResult)
 }
 
 // NameExists makes a simple check for an already existing username.
-func NameExists(service, username string, fakeUserAgent bool, attempt int) (string, error) {
-	url := fmt.Sprintf(URLS[service], username)
+func NameExists(urlTemplate, username string, userAgent string, attempt int) (string, error) {
+	url := fmt.Sprintf(urlTemplate, username)
 	var resp *http.Response
 	var err error
 
-	if fakeUserAgent == true {
+	if userAgent != "" {
 		client := &http.Client{}
 
 		req, _ := http.NewRequest("GET", url, nil)
-		req.Header.Add("User-Agent", "User-Agent: Mozilla/5.0 (Linux; Android 4.4; Nexus 5 Build/_BuildID_) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/30.0.0.0 Mobile Safari/537.36")
+		req.Header.Add("User-Agent", userAgent)
 		resp, err = client.Do(req)
 
 		// Check for error
@@ -50,12 +47,13 @@ func NameExists(service, username string, fakeUserAgent bool, attempt int) (stri
 	if attempt > 3 { // Quit
 		return "", nil
 	} else {
-		return NameExists(service, newUsername, fakeUserAgent, attempt+1)
+		return NameExists(urlTemplate, newUsername, userAgent, attempt+1)
 	}
 }
 
-func NotInPage(service, username, xpath string, attempt int) (string, error) {
-	url := fmt.Sprintf(URLS[service], username)
+// NotInPage decides a username is available if the given element is not found
+func NotInPage(urlTemplate, username, xpath string, attempt int) (string, error) {
+	url := fmt.Sprintf(urlTemplate, username)
 	doc, _ := htmlquery.LoadURL(url)
 
 	missing := false
@@ -74,12 +72,13 @@ func NotInPage(service, username, xpath string, attempt int) (string, error) {
 	if attempt > 3 { // Quit
 		return "", nil
 	} else {
-		return NotInPage(service, newUsername, xpath, attempt+1)
+		return NotInPage(urlTemplate, newUsername, xpath, attempt+1)
 	}
 }
 
-func InPage(service, username, xpath string, attempt int) (string, error) {
-	url := fmt.Sprintf(URLS[service], username)
+// InPage decides a username is available if the given element is found
+func InPage(urlTemplate, username, xpath string, attempt int) (string, error) {
+	url := fmt.Sprintf(urlTemplate, username)
 	doc, _ := htmlquery.LoadURL(url)
 
 	found := false
@@ -98,6 +97,6 @@ func InPage(service, username, xpath string, attempt int) (string, error) {
 	if attempt > 3 { // Quit
 		return "", nil
 	} else {
-		return InPage(service, newUsername, xpath, attempt+1)
+		return InPage(urlTemplate, newUsername, xpath, attempt+1)
 	}
 }

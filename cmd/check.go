@@ -43,9 +43,9 @@ var ghCmd = &cobra.Command{
 	Args:  usernameCheck,
 	Run: func(cmd *cobra.Command, args []string) {
 		ch := make(chan *sites.NameResult)
-		go checkGitHub(args[0], ch)
-		name := <-ch
-		printOutput(name)
+		github := sites.GitHub{}
+		go github.Check(args[0], ch)
+		printOutput(<-ch)
 	},
 }
 
@@ -56,9 +56,9 @@ var fbCmd = &cobra.Command{
 	Args:  usernameCheck,
 	Run: func(cmd *cobra.Command, args []string) {
 		ch := make(chan *sites.NameResult)
-		go checkFacebook(args[0], ch)
-		name := <-ch
-		printOutput(name)
+		facebook := sites.Facebook{}
+		go facebook.Check(args[0], ch)
+		printOutput(<-ch)
 	},
 }
 
@@ -69,9 +69,9 @@ var twitterCmd = &cobra.Command{
 	Args:  usernameCheck,
 	Run: func(cmd *cobra.Command, args []string) {
 		ch := make(chan *sites.NameResult)
-		go checkTwitter(args[0], ch)
-		name := <-ch
-		printOutput(name)
+		twitter := sites.Twitter{}
+		go twitter.Check(args[0], ch)
+		printOutput(<-ch)
 	},
 }
 
@@ -82,9 +82,9 @@ var instaCmd = &cobra.Command{
 	Args:  usernameCheck,
 	Run: func(cmd *cobra.Command, args []string) {
 		ch := make(chan *sites.NameResult)
-		go checkInstagram(args[0], ch)
-		name := <-ch
-		printOutput(name)
+		insta := sites.Instagram{}
+		go insta.Check(args[0], ch)
+		printOutput(<-ch)
 	},
 }
 
@@ -95,9 +95,9 @@ var twitchCmd = &cobra.Command{
 	Args:  usernameCheck,
 	Run: func(cmd *cobra.Command, args []string) {
 		ch := make(chan *sites.NameResult)
-		go checkTwitch(args[0], ch)
-		name := <-ch
-		printOutput(name)
+		twitch := sites.Twitch{}
+		go twitch.Check(args[0], ch)
+		printOutput(<-ch)
 	},
 }
 
@@ -108,9 +108,9 @@ var fortniteCmd = &cobra.Command{
 	Args:  usernameCheck,
 	Run: func(cmd *cobra.Command, args []string) {
 		ch := make(chan *sites.NameResult)
-		go checkFortnite(args[0], ch)
-		name := <-ch
-		printOutput(name)
+		fortnite := sites.Fortnite{}
+		go fortnite.Check(args[0], ch)
+		printOutput(<-ch)
 	},
 }
 
@@ -121,9 +121,9 @@ var gplusCmd = &cobra.Command{
 	Args:  usernameCheck,
 	Run: func(cmd *cobra.Command, args []string) {
 		ch := make(chan *sites.NameResult)
-		go checkGooglePlus(args[0], ch) // This is the only line that needs to be specific to your site
-		name := <-ch
-		printOutput(name)
+		gPlus := sites.GooglePlus{}
+		go gPlus.Check(args[0], ch)
+		printOutput(<-ch)
 	},
 }
 
@@ -183,58 +183,23 @@ func checkAll(username string) {
 
 	ch := make(chan *sites.NameResult)
 
-	// GitHub
-	go checkGitHub(username, ch)
+	checks := []sites.Site{
+		sites.GitHub{},
+		sites.Facebook{},
+		sites.Twitter{},
+		sites.Twitch{},
+		sites.Fortnite{},
+		sites.Instagram{},
+		sites.GooglePlus{},
+	}
 
-	// Facebook
-	go checkFacebook(username, ch)
+	for i := range checks {
+		go checks[i].Check(username, ch)
+	}
 
-	// Twitter
-	go checkTwitter(username, ch)
-
-	// Instagram
-	go checkInstagram(username, ch)
-
-	// Twitch
-	go checkTwitch(username, ch)
-
-	// Fortnite
-	go checkFortnite(username, ch)
-
-	// Google+
-	go checkGooglePlus(username, ch)
-
-	for i := 0; i < len(sites.URLS); i++ {
+	for i := 0; i < len(checks); i++ {
 		name := <-ch
 		printOutput(name)
 	}
 	close(ch)
-}
-
-func checkGitHub(username string, ch chan *sites.NameResult) {
-	ch <- sites.IfPageNotFound("GitHub", username, false)
-}
-
-func checkFacebook(username string, ch chan *sites.NameResult) {
-	ch <- sites.IfPageNotFound("Facebook", username, false)
-}
-
-func checkTwitter(username string, ch chan *sites.NameResult) {
-	ch <- sites.IfPageNotFound("Twitter", username, false)
-}
-
-func checkInstagram(username string, ch chan *sites.NameResult) {
-	ch <- sites.IfPageNotFound("Instagram", username, true)
-}
-
-func checkTwitch(username string, ch chan *sites.NameResult) {
-	ch <- sites.IfPageNotFound("Twitch", username, false)
-}
-
-func checkFortnite(username string, ch chan *sites.NameResult) {
-	ch <- sites.IfElementOnPage("Fortnite", username, "//div[contains(@class, 'profile__title')]//h2/following-sibling::div[1]/div[contains(text(), 'Not found')]")
-}
-
-func checkGooglePlus(username string, ch chan *sites.NameResult) {
-	ch <- sites.IfPageNotFound("Google+", username, false)
 }

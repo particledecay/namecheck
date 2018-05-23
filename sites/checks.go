@@ -8,11 +8,11 @@ type NameResult struct {
 }
 
 // IfPageNotFound tests a username is available if a request returns a 404
-func IfPageNotFound(siteName, username string, fakeUA bool) *NameResult {
+func IfPageNotFound(site Site, username string) *NameResult {
 
-	name := NameResult{SiteName: siteName, Available: false, Alternate: ""}
+	name := NameResult{SiteName: site.Name(), Available: false, Alternate: ""}
 
-	result, err := NameExists(siteName, username, fakeUA, 1)
+	result, err := NameExists(site.URL(), username, site.UserAgent(), 1)
 	if err != nil {
 		name.Available = true
 		name.Alternate = "ERROR"
@@ -28,11 +28,11 @@ func IfPageNotFound(siteName, username string, fakeUA bool) *NameResult {
 }
 
 // IfElementOnPage tests a username is available if an element exists on a page
-func IfElementOnPage(siteName, username, xpath string) *NameResult {
+func IfElementOnPage(site Site, username, xpath string) *NameResult {
 
-	name := NameResult{SiteName: siteName, Available: false, Alternate: ""}
+	name := NameResult{SiteName: site.Name(), Available: false, Alternate: ""}
 
-	result, err := InPage(siteName, username, xpath, 1)
+	result, err := InPage(site.URL(), username, xpath, 1)
 	if err != nil {
 		name.Available = true
 		name.Alternate = "ERROR"
@@ -49,11 +49,11 @@ func IfElementOnPage(siteName, username, xpath string) *NameResult {
 }
 
 // IfElementNotOnPage tests a username is available if an element does not exist on a page
-func IfElementNotOnPage(siteName, username, xpath string) *NameResult {
+func IfElementNotOnPage(site Site, username, xpath string) *NameResult {
 
-	name := NameResult{SiteName: siteName, Available: false, Alternate: ""}
+	name := NameResult{SiteName: site.Name(), Available: false, Alternate: ""}
 
-	result, err := NotInPage(siteName, username, xpath, 1)
+	result, err := NotInPage(site.URL(), username, xpath, 1)
 	if err != nil {
 		name.Available = true
 		name.Alternate = "ERROR"
