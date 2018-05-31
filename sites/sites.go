@@ -46,20 +46,24 @@ func NameExists(urlTemplate, username string, userAgent string, attempt int) (st
 	newUsername := fmt.Sprintf("_%s", username)
 	if attempt > 3 { // Quit
 		return "", nil
-	} else {
-		return NameExists(urlTemplate, newUsername, userAgent, attempt+1)
 	}
+
+	return NameExists(urlTemplate, newUsername, userAgent, attempt+1)
 }
 
 // NotInPage decides a username is available if the given element is not found
 func NotInPage(urlTemplate, username, xpath string, attempt int) (string, error) {
 	url := fmt.Sprintf(urlTemplate, username)
-	doc, _ := htmlquery.LoadURL(url)
+	doc, err := htmlquery.LoadURL(url)
 
-	missing := false
+	if err != nil {
+		return "", err
+	}
+
+	missing := true
 	for _, n := range htmlquery.Find(doc, xpath) {
-		if n.Data == "" {
-			missing = true
+		if n.Data != "" {
+			missing = false
 			break
 		}
 	}
@@ -71,15 +75,19 @@ func NotInPage(urlTemplate, username, xpath string, attempt int) (string, error)
 	newUsername := fmt.Sprintf("_%s", username)
 	if attempt > 3 { // Quit
 		return "", nil
-	} else {
-		return NotInPage(urlTemplate, newUsername, xpath, attempt+1)
 	}
+
+	return NotInPage(urlTemplate, newUsername, xpath, attempt+1)
 }
 
 // InPage decides a username is available if the given element is found
 func InPage(urlTemplate, username, xpath string, attempt int) (string, error) {
 	url := fmt.Sprintf(urlTemplate, username)
-	doc, _ := htmlquery.LoadURL(url)
+	doc, err := htmlquery.LoadURL(url)
+
+	if err != nil {
+		return "", err
+	}
 
 	found := false
 	for _, n := range htmlquery.Find(doc, xpath) {
@@ -96,7 +104,7 @@ func InPage(urlTemplate, username, xpath string, attempt int) (string, error) {
 	newUsername := fmt.Sprintf("_%s", username)
 	if attempt > 3 { // Quit
 		return "", nil
-	} else {
-		return InPage(urlTemplate, newUsername, xpath, attempt+1)
 	}
+
+	return InPage(urlTemplate, newUsername, xpath, attempt+1)
 }
