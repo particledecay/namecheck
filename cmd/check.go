@@ -115,7 +115,7 @@ var fortniteCmd = &cobra.Command{
 }
 
 var gplusCmd = &cobra.Command{
-	Use:   "gplus", // This will be the command name
+	Use:   "gplus",
 	Short: "Query Google+ only",
 	Long:  `Query Google+ for the given <username>.`,
 	Args:  usernameCheck,
@@ -123,6 +123,19 @@ var gplusCmd = &cobra.Command{
 		ch := make(chan *sites.NameResult)
 		gPlus := sites.GooglePlus{}
 		go gPlus.Check(args[0], ch)
+		printOutput(<-ch)
+	},
+}
+
+var redditCmd = &cobra.Command{
+	Use:   "reddit",
+	Short: "Query Reddit only",
+	Long:  `Query Reddit for the given <username>.`,
+	Args:  usernameCheck,
+	Run: func(cmd *cobra.Command, args []string) {
+		ch := make(chan *sites.NameResult)
+		reddit := sites.Reddit{}
+		go reddit.Check(args[0], ch)
 		printOutput(<-ch)
 	},
 }
@@ -144,6 +157,7 @@ func Execute() {
 	rootCmd.AddCommand(twitchCmd)
 	rootCmd.AddCommand(fortniteCmd)
 	rootCmd.AddCommand(gplusCmd)
+	rootCmd.AddCommand(redditCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -191,6 +205,7 @@ func checkAll(username string) {
 		sites.Fortnite{},
 		sites.Instagram{},
 		sites.GooglePlus{},
+		sites.Reddit{},
 	}
 
 	for i := range checks {
