@@ -1,4 +1,4 @@
-# Namecheck
+# Namecheck [![CircleCI branch](https://img.shields.io/circleci/project/github/RedSparr0w/node-csgo-parser/master.svg?style=flat-square&logo=circleci)](https://circleci.com/gh/ParticleDecay/namecheck/tree/master)
 #### A username availability checker.
 
 I decided one day I wanted to change my username on one site to something simpler, but quickly realized that I might not be able to get the same username on other sites that mattered to me. Coincidentally, I wanted to learn Go. This project gave me an excuse. Beware, a Go n00b wrote this. You were warned...
