@@ -140,6 +140,19 @@ var redditCmd = &cobra.Command{
 	},
 }
 
+var dockerCmd = &cobra.Command{
+	Use:   "docker",
+	Short: "Query Docker only",
+	Long:  `Query Docker for the given <username>.`,
+	Args:  usernameCheck,
+	Run: func(cmd *cobra.Command, args []string) {
+		ch := make(chan *sites.NameResult)
+		docker := sites.Docker{}
+		go docker.Check(args[0], ch)
+		printOutput(<-ch)
+	},
+}
+
 func usernameCheck(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
 		return errors.New("Error: A username is required")
@@ -158,6 +171,7 @@ func Execute() {
 	rootCmd.AddCommand(fortniteCmd)
 	rootCmd.AddCommand(gplusCmd)
 	rootCmd.AddCommand(redditCmd)
+	rootCmd.AddCommand(dockerCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -206,6 +220,7 @@ func checkAll(username string) {
 		sites.Instagram{},
 		sites.GooglePlus{},
 		sites.Reddit{},
+		sites.Docker{},
 	}
 
 	for i := range checks {
