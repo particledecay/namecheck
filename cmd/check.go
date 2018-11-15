@@ -153,6 +153,45 @@ var dockerCmd = &cobra.Command{
 	},
 }
 
+var dotComCmd = &cobra.Command{
+	Use:   "dotcom",
+	Short: "Lookup .com domain",
+	Long:  `Lookup availability of a .com domain`,
+	Args:  usernameCheck,
+	Run: func(cmd *cobra.Command, args []string) {
+		ch := make(chan *sites.NameResult)
+		dotcom := sites.DomainDotCom{}
+		go dotcom.Check(args[0], ch)
+		printOutput(<-ch)
+	},
+}
+
+var dotOrgCmd = &cobra.Command{
+	Use:   "dotorg",
+	Short: "Lookup .org domain",
+	Long:  `Lookup availability of a .org domain`,
+	Args:  usernameCheck,
+	Run: func(cmd *cobra.Command, args []string) {
+		ch := make(chan *sites.NameResult)
+		dotorg := sites.DomainDotOrg{}
+		go dotorg.Check(args[0], ch)
+		printOutput(<-ch)
+	},
+}
+
+var dotNetCmd = &cobra.Command{
+	Use:   "dotnet",
+	Short: "Lookup .net domain",
+	Long:  `Lookup availability of a .net domain`,
+	Args:  usernameCheck,
+	Run: func(cmd *cobra.Command, args []string) {
+		ch := make(chan *sites.NameResult)
+		dotnet := sites.DomainDotNet{}
+		go dotnet.Check(args[0], ch)
+		printOutput(<-ch)
+	},
+}
+
 func usernameCheck(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
 		return errors.New("Error: A username is required")
@@ -172,6 +211,9 @@ func Execute() {
 	rootCmd.AddCommand(gplusCmd)
 	rootCmd.AddCommand(redditCmd)
 	rootCmd.AddCommand(dockerCmd)
+	rootCmd.AddCommand(dotComCmd)
+	rootCmd.AddCommand(dotOrgCmd)
+	rootCmd.AddCommand(dotNetCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -221,6 +263,9 @@ func checkAll(username string) {
 		sites.GooglePlus{},
 		sites.Reddit{},
 		sites.Docker{},
+		sites.DomainDotCom{},
+		sites.DomainDotOrg{},
+		sites.DomainDotNet{},
 	}
 
 	for i := range checks {
