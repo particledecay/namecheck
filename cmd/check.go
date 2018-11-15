@@ -192,6 +192,19 @@ var dotNetCmd = &cobra.Command{
 	},
 }
 
+var dotIoCmd = &cobra.Command{
+	Use:   "dotio",
+	Short: "Lookup .io domain",
+	Long:  `Lookup availability of a .io domain`,
+	Args:  usernameCheck,
+	Run: func(cmd *cobra.Command, args []string) {
+		ch := make(chan *sites.NameResult)
+		dotio := sites.DomainDotIo{}
+		go dotio.Check(args[0], ch)
+		printOutput(<-ch)
+	},
+}
+
 func usernameCheck(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
 		return errors.New("Error: A username is required")
@@ -214,6 +227,7 @@ func Execute() {
 	rootCmd.AddCommand(dotComCmd)
 	rootCmd.AddCommand(dotOrgCmd)
 	rootCmd.AddCommand(dotNetCmd)
+	rootCmd.AddCommand(dotIoCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -266,6 +280,7 @@ func checkAll(username string) {
 		sites.DomainDotCom{},
 		sites.DomainDotOrg{},
 		sites.DomainDotNet{},
+		sites.DomainDotIo{},
 	}
 
 	for i := range checks {
