@@ -2,10 +2,12 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.11beta3-stretch
+      - image: circleci/golang:1.11-stretch
     working_directory: /go/src/github.com/ParticleDecay/namecheck
+    environment:
+      GO111MODULE: "on"
     steps:
       - checkout
 
-      - run: dep ensure -v
+      - run: go mod tidy
       - run: go test -v ./...
