@@ -1,8 +1,11 @@
 package sites
 
-import "fmt"
-import "net/http"
-import "github.com/antchfx/htmlquery"
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/antchfx/htmlquery"
+)
 
 // Site is a site that can be queried for a username
 type Site interface {
