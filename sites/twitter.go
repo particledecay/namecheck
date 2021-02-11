@@ -22,5 +22,5 @@ func (t Twitter) UserAgent() string {
 
 // Check queries the Site for `username`
 func (t Twitter) Check(username string, ch chan *NameResult) {
-	ch <- IfPageNotFound(t, username)
+	ch <- IfElementOnPage(t, username, "//span[contains(text(), 'This account doesn')]")
 }

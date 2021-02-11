@@ -22,5 +22,5 @@ func (r Reddit) UserAgent() string {
 
 // Check queries the Site for `username`
 func (r Reddit) Check(username string, ch chan *NameResult) {
-	ch <- IfElementOnPage(r, username, "//h1[text()='page not found']")
+	ch <- IfElementOnPage(r, username, "//div[contains(text(), 'username is incorrect')]")
 }

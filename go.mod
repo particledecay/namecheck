@@ -1,5 +1,7 @@
 module github.com/ParticleDecay/namecheck
 
+go 1.15
+
 require (
 	github.com/antchfx/htmlquery v0.0.0-20180517025602-7afeab9e150c
 	github.com/antchfx/xpath v0.0.0-20180509150720-7148e5d6bb84 // indirect
